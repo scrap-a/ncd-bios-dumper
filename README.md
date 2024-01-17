@@ -45,6 +45,8 @@ nbd_decoder.exe [in.wav] [out.bin]
 出力されたbinファイルがネオジオCDのBIOSです。変調方式が良くないので、精度はよくありません。
 録音から何度かやり直してみても間違っていたら間違っていたら諦めてください・・・。
 
+デコーダーのソースは別リポジトリ（[nbd-decoder](https://github.com/scrap-a/nbd-decoder)）で公開しています。
+
 ## 開発環境
 開発環境として[ngdevkit](https://github.com/dciabrin/ngdevkit)を使用しています。
 また、ソースやリソースにngdevkitのサンプルコードである[ngdevkit-examples](https://github.com/dciabrin/ngdevkit-examples)を使用しています。
