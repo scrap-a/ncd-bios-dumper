@@ -16,19 +16,19 @@
 [The NeoGeo Development Wiki Burning CDs](https://wiki.neogeodev.org/index.php?title=Burning_CDs#Reading_problems)
 
 ## 手順
-1. CD-Rを焼く
+1. CD-Rを焼く  
 最新版ReleaseのzipからCDimage/ncd_bios_dumper.isoあるいはcueからCDライティングソフトでCD-Rに焼いてください。
-2. 録音環境を整える
+2. 録音環境を整える  
 ネオジオCDから音声を録音できるようにしてください。例えば、下記写真のようなRCA-ステレオピンプラグのケーブルを使ってPCのLine-In端子に入力します。
 ![cable](screenshot/cable.jpg)
-3. CD-RからネオジオCDを起動
+3. CD-RからネオジオCDを起動  
 下記のような画面で起動します。
 ![main screen](screenshot/main.png)  
 左右でBIOSダンプ/SAVEダンプ（未実装）/SAVEリストア（未実装）のモードを切り替えます。
 上下で出力音声の変調方式を選択しますが、現在は1方式しか対応していません。
 "AM/mono"でAボタンを押すと再生が始まります。再生時間は約4分です。  
 ![record](screenshot/record.png)
-4. 録音
+4. 録音  
 ***人間が聞く用の音にはなっていないため、スピーカーから再生されないようにご注意ください***
 録音機器orソフトは下記仕様を満たせれば任意のもので構いません。参考までに、私はwin-pcでAudacityを使用して録音しました。
 1度、試しに再生して8割程度(リニア)の音量になるように再生音量か録音音量を調整してください。
@@ -37,7 +37,7 @@
 + 量子化ビット数: 16bit
 + 形式: WAVE(リニアPCM)
 
-5. デコード
+5. デコード  
 最新版ReleaseのzipからDecoder/nbd_decoder.exeを用いてデコードします。
 ```
 nbd_decoder.exe [in.wav] [out.bin]
