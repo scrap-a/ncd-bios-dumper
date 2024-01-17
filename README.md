@@ -23,10 +23,10 @@
 ![cable](screenshot/cable.jpg)
 3. CD-RからネオジオCDを起動
 下記のような画面で起動します。
-![main screen](screenshot/main.png)
+![main screen](screenshot/main.png)  
 左右でBIOSダンプ/SAVEダンプ（未実装）/SAVEリストア（未実装）のモードを切り替えます。
 上下で出力音声の変調方式を選択しますが、現在は1方式しか対応していません。
-"AM/mono"でAボタンを押すと再生が始まります。再生時間は約4分です。
+"AM/mono"でAボタンを押すと再生が始まります。再生時間は約4分です。  
 ![record](screenshot/record.png)
 4. 録音
 ***人間が聞く用の音にはなっていないため、スピーカーから再生されないようにご注意ください***
