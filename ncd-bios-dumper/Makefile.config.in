@@ -1,0 +1,49 @@
+# Auto-generated config file. Re-generate with ./configure
+
+# ngdevkit-toolkit common tools
+M68KAR=@ngar@
+M68KAS=@ngas@
+M68KGCC=@nggcc@
+M68KLD=@ngld@
+M68KOBJCOPY=@ngobjcopy@
+M68KRANLIB=@ngranlib@
+Z80SDAR=@ngsdar@
+Z80SDAS=@ngsdas@
+Z80SDCC=@ngsdcc@
+Z80SDLD=@ngsdld@
+Z80SDOBJCOPY=@ngsdobjcopy@
+Z80SDRANLIB=@ngsdranlib@
+
+# ngdevkit location and common flags
+NGDKBINDIR=@ngdkbindir@
+NGDKSHAREDIR=@ngdksharedir@
+NULLSOUNDDIR=$(NGDKSHAREDIR)
+NULLSOUNDSRCDIR=$(NGDKSHAREDIR)/nullsound
+NULLBIOSDIR=$(NGDKSHAREDIR)
+PALTOOL=@PALTOOL@
+TILETOOL=@TILETOOL@
+ADPCMTOOL=@ADPCMTOOL@
+
+# additional dependencies
+CONVERT=@convert@
+SOX=@sox@
+PYTHON=@python@
+ZIP=@zip@
+RSYNC=@rsync@
+GNGEO=@gngeo@
+
+NGCFLAGS=`pkg-config --cflags ngdevkit`
+NGLIBS=`pkg-config --libs ngdevkit`
+NGLIBDIR=`pkg-config --variable=libdir ngdevkit`
+
+# GnGeo config
+GNGEO_GLSL=@GNGEO_GLSL@
+GNGEO_SHADER_PATH=@GNGEO_SHADER_PATH@
+GLSL_SHADER_PATH=@GLSL_SHADER_PATH@
+SHADER_PATH=@SHADER_PATH@
+SHADER=@SHADER@
+
+# OS-specific
+ENABLE_MSYS2=@ENABLE_MSYS2@
+ENABLE_MINGW=@ENABLE_MINGW@
+GNGEO_INSTALL_PATH=@GNGEO_INSTALL_PATH@
