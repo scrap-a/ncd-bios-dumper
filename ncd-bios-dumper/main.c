@@ -28,6 +28,7 @@
 #include "ncdbios-calls.h"
 #include "ncdbios-ram.h"
 // #include "ncdregisters.h"
+#include "crc_table.h"
 
 /// controller's current state, and change on button press (not release)
 extern u8 bios_p1current;
@@ -149,14 +150,18 @@ int scan_run_length(struct RUN_LENGTH_LIST* rllist, u32 address, u32 size){
     return ret;
 }
 
-void am_encode(u8* address, u32 length, int ch){
+void am_encode(u8* address, u32 length, int quant_bit, int ch){
     u8 input, code;
     u8 *buf;
     u32 i,j, rcnt=0, wcnt=0;
     int flag=1;
-    char wcnt_str[15] = {'a','d','d','r','e','s','s',' ',0,0,0,0,0,0,0};
+    char rcnt_str[15] = {'a','d','d','r','e','s','s',':',0,0,0,0,0,0,0};
     // int rlcnt=0, rlnum=0;
     int buf_flag=0;
+    u32 crc=0xFFFFFFFF;
+    char crc_str[] = {'C', 'R', 'C', ':', 0,0,0,0,0,0,0,0,0};
+    u8 data[2];
+    int endian_flag=1;
     
     // struct RUN_LENGTH_LIST rllist[128];
 #define BUF_SIZE 16384
@@ -166,7 +171,7 @@ void am_encode(u8* address, u32 length, int ch){
         return;
     }
 
-    ng_cls_under(26);
+    ng_cls_under(23);
     ng_center_text_tall(26, 0, "NOW PREPARING");
 
     buf = (u8*)malloc(sizeof(u8)*BUF_SIZE*2);
@@ -186,35 +191,91 @@ void am_encode(u8* address, u32 length, int ch){
     for(i=0; i<length; i++){
 
         input = *(address+rcnt);
+        data[endian_flag] = input;
+        if(endian_flag==0){
+            crc = crc_table[(crc ^ data[0]) & 0xFF] ^ (crc >> 8);
+            crc = crc_table[(crc ^ data[1]) & 0xFF] ^ (crc >> 8);
+        }
+        endian_flag = !endian_flag;
+
         rcnt++;
-        code = ((input >> 6)&0x3);
-        buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0x4)<<4;
-        buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0xC;
-        wcnt++;
+        if(quant_bit==2){
+            code = ((input >> 6)&0x3);
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0x4)<<4;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0xC;
+            wcnt++;
 
-        code = ((input >> 4)&0x3);
-        buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0xC)<<4;
-        buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0x4;
-        wcnt++;
+            code = ((input >> 4)&0x3);
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0xC)<<4;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0x4;
+            wcnt++;
 
-        code = ((input >> 2)&0x3);
-        buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0x4)<<4;
-        buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0xC;
-        wcnt++;
+            code = ((input >> 2)&0x3);
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0x4)<<4;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0xC;
+            wcnt++;
 
-        code = ((input >> 0)&0x3);
-        buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0xC)<<4;
-        buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0x4;
-        wcnt++;
-        // }
+            code = ((input >> 0)&0x3);
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0xC)<<4;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0x4;
+            wcnt++;
+        }else if(quant_bit==1){
+            code = ((input >> 7)&0x1);
+            code = (code<<1) + code;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0x4)<<4;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0xC;
+            wcnt++;
 
-        if((wcnt+4) % BUF_SIZE == 0){
-            wcnt+=4;
+            code = ((input >> 6)&0x1);
+            code = (code<<1) + code;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0xC)<<4;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0x4;
+            wcnt++;
 
-            i2a( (wcnt>>16)&0xFF, &wcnt_str[8]);
-            i2a( (wcnt>> 8)&0xFF, &wcnt_str[10]);
-            i2a( (wcnt>> 0)&0xFF, &wcnt_str[12]);
-            ng_center_text(23, 0, wcnt_str);
+            code = ((input >> 5)&0x1);
+            code = (code<<1) + code;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0x4)<<4;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0xC;
+            wcnt++;
+
+            code = ((input >> 4)&0x1);
+            code = (code<<1) + code;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0xC)<<4;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0x4;
+            wcnt++;
+
+            code = ((input >> 3)&0x1);
+            code = (code<<1) + code;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0x4)<<4;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0xC;
+            wcnt++;
+
+            code = ((input >> 2)&0x1);
+            code = (code<<1) + code;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0xC)<<4;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0x4;
+            wcnt++;
+
+            code = ((input >> 1)&0x1);
+            code = (code<<1) + code;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0x4)<<4;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0xC;
+            wcnt++;
+
+            code = ((input >> 0)&0x1);
+            code = (code<<1) + code;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0xC)<<4;
+            buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] |= code | 0x4;
+            wcnt++;
+        }
+
+        if((wcnt+8) % BUF_SIZE == 0){
+            wcnt+=8;
+
+            i2a( (rcnt>>16)&0xFF, &rcnt_str[8]);
+            i2a( (rcnt>> 8)&0xFF, &rcnt_str[10]);
+            i2a( (rcnt>> 0)&0xFF, &rcnt_str[12]);
+            ng_center_text(23, 0, rcnt_str);
 
             // memory_view((u8*)buf, 0);
 
@@ -264,6 +325,18 @@ void am_encode(u8* address, u32 length, int ch){
     }
     *REG_SOUND=5+buf_flag*4;
 
+    i2a( (rcnt>>16)&0xFF, &rcnt_str[8]);
+    i2a( (rcnt>> 8)&0xFF, &rcnt_str[10]);
+    i2a( (rcnt>> 0)&0xFF, &rcnt_str[12]);
+    ng_center_text(23, 0, rcnt_str);
+
+    crc = ~crc;
+    i2a( (crc>>24)&0xFF, &crc_str[4]);
+    i2a( (crc>>16)&0xFF, &crc_str[6]);
+    i2a( (crc>> 8)&0xFF, &crc_str[8]);
+    i2a( (crc>> 0)&0xFF, &crc_str[10]);
+    ng_center_text(24, 0, crc_str);
+
     while(1){
         if(*REG_SOUND>>7 & 0x01){
             ng_cls_under(26);
@@ -276,10 +349,13 @@ void am_encode(u8* address, u32 length, int ch){
 void bios_dump(int method){
 
     switch(method){
-        case 0:     //am_mono
-            am_encode(BIOS, 524288, 1);
+        case 0:     //am_mono_high(2bit per quantizaion)
+            am_encode(BIOS, 524288, 2, 1);
             break;
-        case 1:     //am_stereo
+        case 1:     //am_mono_low(1bit per quantizaion)
+            am_encode(BIOS, 524288, 1, 1);
+            break;
+        case 2:     //am_stereo
             // am_encode(BIOS, 524288, 2);
             break;
     }
@@ -289,7 +365,7 @@ void bios_dump(int method){
 void memory_view(u8* base_add, int endian){
     char add_str[] = {0,0,0,0,0,':',0};
     u32 add=0;
-    u8 u, d;
+    u8 u, d, s;
     if(endian != 0){
         endian = 1;
     }
@@ -315,6 +391,7 @@ void memory_view(u8* base_add, int endian){
     while(1){
         u = (bios_p1change & CNT_UP);
         d = (bios_p1change & CNT_DOWN);
+        s = (bios_statcurnt & CNT_START1);
 
         if(u){
             add= ( add >= 23*16) ? add-23*16 : 0;
@@ -366,8 +443,47 @@ void memory_view(u8* base_add, int endian){
             
             ng_wait_vblank();
         }
+        if(s){
+            break;
+        }
 
+    }
+}
 
+// calc CRC32 (debug)
+void calc_crc32(u8* base_add, int endian, u32 length){
+    char crc_str[] = {'C', 'R', 'C', ':', 0,0,0,0,0,0,0,0,0};
+    u32 crc=0xFFFFFFFF;
+    u8 data;
+    u8 s;
+
+    if(endian != 0){
+        endian = 1;
+    }
+
+    ng_cls_under(26);
+    ng_center_text_tall(26, 0, "NOW CALCULATING");
+
+    for(u32 i=0; i<length; i+=2){
+        data = *(base_add+i+endian);
+        crc = crc_table[(crc ^ data) & 0xFF] ^ (crc >> 8);
+        data = *(base_add+i+!endian);
+        crc = crc_table[(crc ^ data) & 0xFF] ^ (crc >> 8);
+    }
+    crc = ~crc;
+
+    i2a( (crc>>24)&0xFF, &crc_str[4]);
+    i2a( (crc>>16)&0xFF, &crc_str[6]);
+    i2a( (crc>> 8)&0xFF, &crc_str[8]);
+    i2a( (crc>> 0)&0xFF, &crc_str[10]);
+    ng_cls_under(26);
+    ng_center_text_tall(26, 0, crc_str);
+
+    while(1){
+        s = (bios_statcurnt & CNT_START1);
+        if(s){
+            break;
+        }
     }
 }
 
@@ -377,12 +493,12 @@ int main(void) {
     ng_cls();
     init_palette();
 
-    u8 l, r, u, d, a, s;
+    u8 l, r, u, d, a, b, c;
 
     ng_center_text_tall(TOP+2, 0, "NCD BIOS DUMPER");
 
 #define MODE_NUM 3      //(BIOS dump / SAVE dump / SAVE restore)
-#define METHOD_NUM 2    //encoding method num
+#define METHOD_NUM 3    //encoding method num
     int mode = 0;
     int mode_array[MODE_NUM];
     int method = 0;
@@ -404,8 +520,9 @@ int main(void) {
         u = (bios_p1change & CNT_UP);
         d = (bios_p1change & CNT_DOWN);
         a = (bios_p1current & CNT_A);
-        s = (bios_statcurnt & CNT_START1);
-
+        b = (bios_p1current & CNT_B);
+        c = (bios_p1current & CNT_C);
+        
         if(l){
             mode_array[mode] = 0;
             mode = (mode-1 + MODE_NUM) % MODE_NUM;
@@ -446,13 +563,15 @@ int main(void) {
 
         switch(mode){
             case 0:
-                ng_center_text(TOP+14, method_array[0], "AM/mono(about 4 minutes)");
-                ng_center_text(TOP+15, method_array[1], "AM/stereo(unimplemented)");
+                ng_center_text(TOP+14, method_array[0], "AM(High Speed)/mono/about 4 min");
+                ng_center_text(TOP+15, method_array[1], "AM(Low Speed)/mono/about 8 min");
+                ng_center_text(TOP+16, method_array[2], "AM/stereo(unimplemented)");
                 // ng_center_text(TOP+16, method_array[2], "KCS/2400baud/mono (about 30minutes)");
                 break;
             case 1:
-                ng_center_text(TOP+14, method_array[0], "AM/mono(unimplemented)");
-                ng_center_text(TOP+15, method_array[1], "AM/stereo(unimplemented)");
+                ng_center_text(TOP+14, method_array[0], "AM(High Speed)/mono(unimplemented)");
+                ng_center_text(TOP+15, method_array[1], "AM(Low Speed)/mono(unimplemented)");
+                ng_center_text(TOP+16, method_array[2], "AM/stereo(unimplemented)");
                 // ng_center_text(TOP+15, method_array[1], "SCS/mono (about 22minutes)");
                 // ng_center_text(TOP+16, method_array[2], "KCS/2400baud/mono (about 30minutes)");
                 break;
@@ -463,8 +582,12 @@ int main(void) {
 
 
         if(a){
-            if(s){ //START+A -> bios header view(for debug)
+            if(b){ //B+A -> bios header view(for debug)
                 memory_view(BIOS, 1);
+                break;
+            }
+            if(c){ //C+A -> bios crc32 calculation (for debug)
+                calc_crc32(BIOS, 1, 524288);
                 break;
             }
 

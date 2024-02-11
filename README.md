@@ -25,25 +25,29 @@
 下記のような画面で起動します。  
 ![main screen](screenshot/main.png)  
 左右でBIOSダンプ/SAVEダンプ（未実装）/SAVEリストア（未実装）のモードを切り替えます。  
-上下で出力音声の変調方式を選択しますが、現在は1方式しか対応していません。  
-"AM/mono"でAボタンを押すと再生が始まります。再生時間は約4分です。  
+上下で出力音声の変調方式を選択します。  
+"AM(High Speed)/mono"あるいは"AM(Low Speed)/mono"でAボタンを押すと再生が始まります。再生時間は約4分or約8分です。
+High Speedの方が再生時間が短いですが安定性が低いです。初めからLow Speedを使った方が良いかも。  
 ![record](screenshot/record.png)  
 4. 録音  
 ***人間が聞く用の音にはなっていないため、スピーカーから再生されないようにご注意ください***  
 録音機器orソフトは下記仕様を満たせれば任意のもので構いません。参考までに、私はwin-pcでAudacityを使用して録音しました。  
 1度、試しに再生して8割程度(リニア)の音量になるように再生音量か録音音量を調整してください。  
 録音形式として下記の形式で録音してください。画面下部にFINISHEDと出たら終了です。  
-+ サンプリング周波数: 96kHz以上(192kHz推奨)
++ サンプリング周波数(High Speed): 96kHz以上(192kHz推奨)
++ サンプリング周波数(Low Speed): 44.1kHz以上
 + 量子化ビット数: 16bit
 + 形式: WAVE(リニアPCM)
 
 5. デコード  
 最新版ReleaseのzipからDecoder/nbd_decoder.exeを用いてデコードします。  
 ```
-nbd_decoder.exe [in.wav] [out.bin]
+nbd_decoder.exe -m [mode] [in.wav] [out.bin]
+  mode:am_mono_high am_mono_low
 ```
+High Speedの場合は"am_mono_high"を、Low Speedの場合は"am_mono_low"を選択します。
 出力されたbinファイルがネオジオCDのBIOSです。変調方式が良くないので、精度はよくありません。  
-録音から何度かやり直してみても間違っていたら間違っていたら諦めてください・・・。  
+Low Speedで何度かやってみたり、録音環境を見直しても間違っていたら諦めてください・・・。  
   
 デコーダーのソースは別リポジトリ（[nbd-decoder](https://github.com/scrap-a/nbd-decoder)）で公開しています。  
 
