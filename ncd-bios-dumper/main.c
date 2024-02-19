@@ -43,6 +43,12 @@ extern u8 bios_p1change;
 /// top of BIOS address
 #define BIOS ((u8*)(0xC00000))
 
+/// top of SAVE address
+#define SAVE ((u8*)(0x800000))
+
+#define BIOS_SIZE 0x80000
+#define SAVE_SIZE 0x4000
+
 void memory_view(u8* base_add, int endian);
 
 const u16 clut[][16]= {
@@ -150,7 +156,7 @@ int scan_run_length(struct RUN_LENGTH_LIST* rllist, u32 address, u32 size){
     return ret;
 }
 
-void am_encode(u8* address, u32 length, int quant_bit, int ch){
+void am_encode(u8* address, u32 length, int quant_bit, int ch, int endian, int stripe){
     u8 input, code;
     u8 *buf;
     u32 i,j, rcnt=0, wcnt=0;
@@ -160,8 +166,8 @@ void am_encode(u8* address, u32 length, int quant_bit, int ch){
     int buf_flag=0;
     u32 crc=0xFFFFFFFF;
     char crc_str[] = {'C', 'R', 'C', ':', 0,0,0,0,0,0,0,0,0};
-    u8 data[2];
-    int endian_flag=1;
+    int endian_flag=endian;
+    int stripe_flag=1;
     
     // struct RUN_LENGTH_LIST rllist[128];
 #define BUF_SIZE 16384
@@ -169,6 +175,14 @@ void am_encode(u8* address, u32 length, int quant_bit, int ch){
 
     if(ch!=1){
         return;
+    }
+
+    if(stripe<0 || stripe>2){
+        return;
+    }
+    rcnt+=(stripe&0b1);
+    if(stripe){
+        stripe_flag++;
     }
 
     ng_cls_under(23);
@@ -190,15 +204,14 @@ void am_encode(u8* address, u32 length, int quant_bit, int ch){
 
     for(i=0; i<length; i++){
 
-        input = *(address+rcnt);
-        data[endian_flag] = input;
-        if(endian_flag==0){
-            crc = crc_table[(crc ^ data[0]) & 0xFF] ^ (crc >> 8);
-            crc = crc_table[(crc ^ data[1]) & 0xFF] ^ (crc >> 8);
+        input = *(address+rcnt+endian_flag*stripe_flag);
+        if(endian_flag==(!endian)){
+            rcnt+=2*stripe_flag;
         }
         endian_flag = !endian_flag;
 
-        rcnt++;
+        crc = crc_table[(crc ^ input) & 0xFF] ^ (crc >> 8);
+
         if(quant_bit==2){
             code = ((input >> 6)&0x3);
             buf[wcnt%BUF_SIZE+buf_flag*BUF_SIZE] = (code | 0x4)<<4;
@@ -302,7 +315,7 @@ void am_encode(u8* address, u32 length, int quant_bit, int ch){
             buf_flag = !buf_flag;
             wcnt+=8;
         }
-        if(rcnt == length){
+        if(rcnt >= length){
             break;
         }
 
@@ -325,6 +338,10 @@ void am_encode(u8* address, u32 length, int quant_bit, int ch){
     }
     *REG_SOUND=5+buf_flag*4;
 
+    if(rcnt > length){
+        rcnt = length;
+    }
+
     i2a( (rcnt>>16)&0xFF, &rcnt_str[8]);
     i2a( (rcnt>> 8)&0xFF, &rcnt_str[10]);
     i2a( (rcnt>> 0)&0xFF, &rcnt_str[12]);
@@ -344,16 +361,32 @@ void am_encode(u8* address, u32 length, int quant_bit, int ch){
             break;
         }
     }
+    while(1){}
 }
 
 void bios_dump(int method){
 
     switch(method){
         case 0:     //am_mono_high(2bit per quantizaion)
-            am_encode(BIOS, 524288, 2, 1);
+            am_encode(BIOS, BIOS_SIZE, 2, 1, 1, 0);
             break;
         case 1:     //am_mono_low(1bit per quantizaion)
-            am_encode(BIOS, 524288, 1, 1);
+            am_encode(BIOS, BIOS_SIZE, 1, 1, 1, 0);
+            break;
+        case 2:     //am_stereo
+            // am_encode(BIOS, 524288, 2);
+            break;
+    }
+}
+
+void save_dump(int method){
+
+    switch(method){
+        case 0:     //am_mono_high(2bit per quantizaion)
+            am_encode(SAVE, SAVE_SIZE, 2, 1, 0, 1);
+            break;
+        case 1:     //am_mono_low(1bit per quantizaion)
+            am_encode(SAVE, SAVE_SIZE, 1, 1, 0, 1);
             break;
         case 2:     //am_stereo
             // am_encode(BIOS, 524288, 2);
@@ -569,8 +602,8 @@ int main(void) {
                 // ng_center_text(TOP+16, method_array[2], "KCS/2400baud/mono (about 30minutes)");
                 break;
             case 1:
-                ng_center_text(TOP+14, method_array[0], "AM(High Speed)/mono(unimplemented)");
-                ng_center_text(TOP+15, method_array[1], "AM(Low Speed)/mono(unimplemented)");
+                ng_center_text(TOP+14, method_array[0], "AM(High Speed)/mono/about 5 sec");
+                ng_center_text(TOP+15, method_array[1], "AM(Low Speed)/mono/about 10 sec");
                 ng_center_text(TOP+16, method_array[2], "AM/stereo(unimplemented)");
                 // ng_center_text(TOP+15, method_array[1], "SCS/mono (about 22minutes)");
                 // ng_center_text(TOP+16, method_array[2], "KCS/2400baud/mono (about 30minutes)");
@@ -583,11 +616,11 @@ int main(void) {
 
         if(a){
             if(b){ //B+A -> bios header view(for debug)
-                memory_view(BIOS, 1);
+                memory_view(SAVE, 1);
                 break;
             }
             if(c){ //C+A -> bios crc32 calculation (for debug)
-                calc_crc32(BIOS, 1, 524288);
+                calc_crc32(BIOS, 1, BIOS_SIZE);
                 break;
             }
 
@@ -596,6 +629,7 @@ int main(void) {
                     bios_dump(method);
                     break;
                 case 1:
+                    save_dump(method);
                     break;
                 case 2:
                     break;
