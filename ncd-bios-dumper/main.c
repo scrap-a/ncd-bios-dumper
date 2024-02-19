@@ -46,6 +46,9 @@ extern u8 bios_p1change;
 /// top of SAVE address
 #define SAVE ((u8*)(0x800000))
 
+// top of SAVE FILE address
+#define SAVE_FILE ((u8*)(0xFC000))
+
 #define BIOS_SIZE 0x80000
 #define SAVE_SIZE 0x4000
 
@@ -394,6 +397,38 @@ void save_dump(int method){
     }
 }
 
+void save_restore(){
+    int i;
+    u8 a, b, d, s;
+
+    ng_center_text_tall(20, 2, "CAUTION");
+    ng_center_text(22, 2, "Save will be overwritten");
+    ng_center_text(23, 2, "If you continue, press Start+A+D");
+    ng_center_text(24, 2, "If you cancel, press B");
+
+    while(1){
+        a = (bios_p1current & CNT_A);
+        b = (bios_p1current & CNT_B);
+        d = (bios_p1current & CNT_D);
+        s = (bios_statcurnt & CNT_START1);
+        if(s)
+            if(d)
+                if(a)
+                    break;
+
+        if(b){
+            ng_cls_under(20);
+            return;
+        }
+    }
+
+    for(i=0; i<SAVE_SIZE/2; i++){
+        *(SAVE+i*2+1) = *(SAVE_FILE+i);
+    }
+    ng_center_text_tall(26, 0, "FINISHED");
+    while(1){}
+}
+
 // memory viewer (debug)
 void memory_view(u8* base_add, int endian){
     char add_str[] = {0,0,0,0,0,':',0};
@@ -609,7 +644,7 @@ int main(void) {
                 // ng_center_text(TOP+16, method_array[2], "KCS/2400baud/mono (about 30minutes)");
                 break;
             case 2:
-                ng_center_text(TOP+14, method_array[0], "(unimplemented)");
+                ng_center_text(TOP+14, method_array[0], "SAVE.PRG->restore");
                 break;
         }
 
@@ -632,6 +667,7 @@ int main(void) {
                     save_dump(method);
                     break;
                 case 2:
+                    save_restore();
                     break;
             }
         }

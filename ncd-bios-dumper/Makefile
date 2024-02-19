@@ -37,12 +37,13 @@ PRJ=DUMPER
 MROM=rom/$(PRJ).Z80
 SROM=rom/$(PRJ).FIX
 PROM=rom/$(PRJ).PRG
+SAVE=rom/SAVE.PRG
 ABS=rom/ABS.TXT
 BIB=rom/BIB.TXT
 CPY=rom/CPY.TXT
 IPL=rom/IPL.TXT
 
-cd: $(PROM) $(SROM) $(MROM) $(ABS) $(BIB) $(CPY) $(IPL) | rom
+cd: $(PROM) $(SROM) $(MROM) $(SAVE) $(ABS) $(BIB) $(CPY) $(IPL) | rom
 
 OBJS=main
 ELF=rom.elf
@@ -90,6 +91,10 @@ $(PROM): $(ELF) | rom
 	cat cdReserved.bin >> $@
 	dd if=tmp.prg of=$@ bs=1 skip=100 conv=notrunc oflag=append
 
+# SAVE
+$(SAVE):save/save.bin | rom
+	cp save/save.bin $@
+
 # A/B/C File
 $(ABS):txt/ABS.txt | rom
 	cp txt/ABS.txt $@
@@ -101,6 +106,7 @@ $(CPY):txt/CPY.txt | rom
 $(IPL): $(shell ls | grep $(IPL)) | rom
 	echo -en $(PRJ).FIX,0,0'\r\n' >> $@
 	echo -en $(PRJ).PRG,0,0'\r\n' >> $@
+	echo -en SAVE.PRG,0,FC000'\r\n' >> $@
 	echo -en $(PRJ).Z80,0,0'\r\n' >> $@
 	echo -en '\x1a' >> $@
 

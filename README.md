@@ -15,7 +15,7 @@
 参考:
 [The NeoGeo Development Wiki Burning CDs](https://wiki.neogeodev.org/index.php?title=Burning_CDs#Reading_problems)  
 
-## 手順
+## BIOS/SAVEのダンプ手順
 1. CD-Rを焼く  
 最新版ReleaseのzipからCDimage/ncd_bios_dumper.isoあるいはcueからCDライティングソフトでCD-Rに焼いてください。  
 2. 録音環境を整える  
@@ -24,7 +24,7 @@
 3. CD-RからネオジオCDを起動  
 下記のような画面で起動します。  
 ![main screen](screenshot/main.png)  
-左右でBIOSダンプ/SAVEダンプ（未実装）/SAVEリストア（未実装）のモードを切り替えます。  
+左右でBIOSダンプ/SAVEダンプ/SAVEリストアのモードを切り替えます。  
 上下で出力音声の変調方式を選択します。  
 "AM(High Speed)/mono"あるいは"AM(Low Speed)/mono"でAボタンを押すと再生が始まります。再生時間は約4分or約8分です。
 High Speedの方が再生時間が短いですが安定性が低いです。初めからLow Speedを使った方が良いかも。  
@@ -51,6 +51,21 @@ Low Speedで何度かやってみたり、録音環境を見直しても間違�
   
 デコーダーのソースは別リポジトリ（[nbd-decoder](https://github.com/scrap-a/nbd-decoder)）で公開しています。  
 
+## SAVEのリストア手順
+1. isoの中のセーブファイルを書き換える
+最新版ReleaseのzipからCDimage/ncd_bios_dumper.isoを取り出し、isoファイルの中身を編集できるソフトウェア（例えばWinISO）で、イメージ内のSAVE.PRGを、リストアしたいセーブファイルで上書きします。  
+![WinISO](screenshot/winiso.png)
+2. CD-Rを焼く  
+ncd_bios_dumper.isoあるいはcueからCDライティングソフトでCD-Rに焼いてください。  
+3. CD-RからネオジオCDを起動  
+下記のような画面で起動します。  
+![main screen](screenshot/main.png)  
+左右でSAVEリストアのモードを切り替え、Aで決定します。  
+4. SAVEリストアの確認画面
+操作ミスで実機のSAVEが上書きされないように、警告として下記のような画面が出ます。  
+画面の指示に従ってください。  
+![save_restore](screenshot/save_restore.png)  
+  
 ## 開発環境
 開発環境として[ngdevkit](https://github.com/dciabrin/ngdevkit)を使用しています。  
 また、ソースやリソースにngdevkitのサンプルコードである[ngdevkit-examples](https://github.com/dciabrin/ngdevkit-examples)を使用しています。  
@@ -63,7 +78,6 @@ BIOSのデータに応じて、下記画像の各サンプル(黒丸)の振幅(A
 ![am_method](screenshot/am_method.png)  
 
 ## ToDo
-+ セーブデータの入出力への対応
 + 最新の[ngdevkit](https://github.com/dciabrin/ngdevkit)環境へ移行
 + ステレオ出力への対応(高速化)
 + KCSやSCSなどの従来よく使われていた変調方式への対応(安定化)
