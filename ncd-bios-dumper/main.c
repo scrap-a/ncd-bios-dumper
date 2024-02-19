@@ -370,11 +370,11 @@ void am_encode(u8* address, u32 length, int quant_bit, int ch, int endian, int s
 void bios_dump(int method){
 
     switch(method){
-        case 0:     //am_mono_high(2bit per quantizaion)
-            am_encode(BIOS, BIOS_SIZE, 2, 1, 1, 0);
-            break;
-        case 1:     //am_mono_low(1bit per quantizaion)
+        case 0:     //am_mono_low(1bit per quantizaion)
             am_encode(BIOS, BIOS_SIZE, 1, 1, 1, 0);
+            break;
+        case 1:     //am_mono_high(2bit per quantizaion)
+            am_encode(BIOS, BIOS_SIZE, 2, 1, 1, 0);
             break;
         case 2:     //am_stereo
             // am_encode(BIOS, 524288, 2);
@@ -385,11 +385,11 @@ void bios_dump(int method){
 void save_dump(int method){
 
     switch(method){
-        case 0:     //am_mono_high(2bit per quantizaion)
-            am_encode(SAVE, SAVE_SIZE, 2, 1, 0, 1);
-            break;
-        case 1:     //am_mono_low(1bit per quantizaion)
+        case 0:     //am_mono_low(1bit per quantizaion)
             am_encode(SAVE, SAVE_SIZE, 1, 1, 0, 1);
+            break;
+        case 1:     //am_mono_high(2bit per quantizaion)
+            am_encode(SAVE, SAVE_SIZE, 2, 1, 0, 1);
             break;
         case 2:     //am_stereo
             // am_encode(BIOS, 524288, 2);
@@ -566,7 +566,7 @@ int main(void) {
     ng_center_text_tall(TOP+2, 0, "NCD BIOS DUMPER");
 
 #define MODE_NUM 3      //(BIOS dump / SAVE dump / SAVE restore)
-#define METHOD_NUM 3    //encoding method num
+#define METHOD_NUM 2    //encoding method num
     int mode = 0;
     int mode_array[MODE_NUM];
     int method = 0;
@@ -631,15 +631,15 @@ int main(void) {
 
         switch(mode){
             case 0:
-                ng_center_text(TOP+14, method_array[0], "AM(High Speed)/mono/about 4 min");
-                ng_center_text(TOP+15, method_array[1], "AM(Low Speed)/mono/about 8 min");
-                ng_center_text(TOP+16, method_array[2], "AM/stereo(unimplemented)");
+                ng_center_text(TOP+14, method_array[0], "AM(Low Speed)/mono/about 8 min");
+                ng_center_text(TOP+15, method_array[1], "AM(High Speed)/mono/about 4 min");
+                // ng_center_text(TOP+16, method_array[2], "AM/stereo(unimplemented)");
                 // ng_center_text(TOP+16, method_array[2], "KCS/2400baud/mono (about 30minutes)");
                 break;
             case 1:
-                ng_center_text(TOP+14, method_array[0], "AM(High Speed)/mono/about 5 sec");
-                ng_center_text(TOP+15, method_array[1], "AM(Low Speed)/mono/about 10 sec");
-                ng_center_text(TOP+16, method_array[2], "AM/stereo(unimplemented)");
+                ng_center_text(TOP+14, method_array[0], "AM(Low Speed)/mono/about 10 sec");
+                ng_center_text(TOP+15, method_array[1], "AM(High Speed)/mono/about 5 sec");
+                // ng_center_text(TOP+16, method_array[2], "AM/stereo(unimplemented)");
                 // ng_center_text(TOP+15, method_array[1], "SCS/mono (about 22minutes)");
                 // ng_center_text(TOP+16, method_array[2], "KCS/2400baud/mono (about 30minutes)");
                 break;
