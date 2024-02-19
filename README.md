@@ -33,19 +33,27 @@ High Speedの方が再生時間が短いですが安定性が低いです。初�
 ***人間が聞く用の音にはなっていないため、スピーカーから再生されないようにご注意ください***  
 録音機器orソフトは下記仕様を満たせれば任意のもので構いません。参考までに、私はwin-pcでAudacityを使用して録音しました。  
 1度、試しに再生して8割程度(リニア)の音量になるように再生音量か録音音量を調整してください。  
-録音形式として下記の形式で録音してください。画面下部にFINISHEDと出たら終了です。  
+録音形式として下記の形式で録音してください。  
 + サンプリング周波数(High Speed): 96kHz以上(192kHz推奨)
 + サンプリング周波数(Low Speed): 44.1kHz以上
 + 量子化ビット数: 16bit
 + 形式: WAVE(リニアPCM)
 
-5. デコード  
+5. 録音終了とCRCの確認
+画面下部にFINISHEDと出たら終了です。終了時には下記のような画面になります。  
+"CRC:"の部分の値をメモしておいてください。  
+![finished](screenshot/finished.png)
+  
+6. デコード  
 最新版ReleaseのzipからDecoder/nbd_decoder.exeを用いてデコードします。  
 ```
 nbd_decoder.exe -m [mode] [in.wav] [out.bin]
   mode:am_mono_high am_mono_low
 ```
-High Speedの場合は"am_mono_high"を、Low Speedの場合は"am_mono_low"を選択します。
+High Speedの場合は"am_mono_high"を、Low Speedの場合は"am_mono_low"を選択します。  
+デコード後には下記画面のようにデコードファイルのCRCが出力されます。これがネオジオCD本体側の画面で出たものと同じであれば、正しくデコードできています。  
+![decode](screenshot/decode.png)  
+  
 出力されたbinファイルがネオジオCDのBIOSです。変調方式が良くないので、精度はよくありません。  
 Low Speedで何度かやってみたり、録音環境を見直しても間違っていたら諦めてください・・・。  
   
