@@ -95,4 +95,6 @@ BIOSのデータに応じて、下記画像の各サンプル(黒丸)の振幅(A
 
 ## （参考）Neo CD SD Loaderで使用できるか？
 使用できますが、[Neo CD SD Loader](http://furrtek.free.fr/sdloader/)はBIOSにパッチを当てるため、結果的に正しいBIOSは吸い出せません。  
-パッチ済みのBIOSは、ファームアップデート時にSDにバックアップされるため吸い出す必要もありません。  
+Neo CD SD LoaderでBIOSを吸い出すには、下記の記事を参照してください。  
+  
+[Neo CD SD Loaderを使ってネオジオCDのBIOSをダンプする - 発明の友](http://blog.livedoor.jp/scrap_a/archives/36821052.html)  
