@@ -1,3 +1,5 @@
+日本語のREADMEは[こちら](/README.md)  
+
 # ncd-bios-dumper
 
 This program runs on the NeoGeo CD and was created with the concept of modulating the BIOS into audio signals.  

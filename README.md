@@ -1,3 +1,5 @@
+Click [here](/README_en.md) for the English README
+
 # ncd-bios-dumper
 
 ネオジオCD上で動作するプログラムであり、BIOSを音声信号に変調して出力することをコンセプトに作成しています。  
